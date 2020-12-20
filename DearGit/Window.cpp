@@ -49,13 +49,18 @@ bool Window::Init()
         std::cout << "Failed initializing textures\n";
         return false;
     }
-    if(!localRegion.Init())
+    if(!localRegion.Init(this))
     {
         std::cout << "Failed initializing local region\n";
         return false;
     }
 
     return true;
+}
+
+bool Window::IsKeyPressed(int keyCode)
+{
+    return glfwGetKey(window, keyCode) == GLFW_PRESS;
 }
 
 bool Window::ContinueRunning()

@@ -11,6 +11,7 @@ public:
     bool ContinueRunning();
     void DrawFrame();
     void CleanUp();
+    bool IsKeyPressed(int keyCode);
 private:
     void DrawNavigation(int size);
     LocalRegion localRegion;

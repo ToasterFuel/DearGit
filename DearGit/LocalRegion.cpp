@@ -1,7 +1,9 @@
 #include "LocalRegion.h"
 #include "TextureHolder.h"
 #include "imgui/imgui.h"
+#include "Window.h"
 #include "Utils.h"
+#include <GLFW/glfw3.h>
 
 #define MIN_SIZE  200
 
@@ -9,7 +11,7 @@ LocalRegion::LocalRegion(): fileListWidth(-1), fileListHeight(-1)
 {
 }
 
-bool LocalRegion::Init()
+bool LocalRegion::ChildInit()
 {
     return true;
 }
@@ -28,6 +30,7 @@ void LocalRegion::DrawChildRegion(int width, int height)
         ImGui::ImageButton(GetTextureId(TEXTURE_PULL), ImVec2(40, 40), ImVec2(0, 0), ImVec2(1, 1), 5);
         ImGui::Button("Push", ImVec2(50, 50));
         ImGui::Button("Pull", ImVec2(50, 50));
+        ImGui::Button("Refresh", ImVec2(50, 50));
         ImGui::Button("Commit", ImVec2(50, 50));
         ImGui::Button("Add", ImVec2(50, 50));
         ImGui::Button("Minus", ImVec2(50, 50));
@@ -38,10 +41,50 @@ void LocalRegion::DrawChildRegion(int width, int height)
     {
         DrawLabel("Staged Files");
         ImGui::BeginChild("Staged Files", ImVec2(fileListWidth, fileListHeight), true);
-        for (int i = 0; i < 100; i++)
+        static int lastSelected = -1;
+        for(int i = 0; i < 100; i++)
         {
             sprintf_s(label, "Staged_%d.txt", i);
-            ImGui::Selectable(label, false);
+            bool state = ImGui::Selectable(label, IndexHighlighted(i));
+            if(state)
+            {
+                if(window->IsKeyPressed(GLFW_KEY_LEFT_SHIFT) || window->IsKeyPressed(GLFW_KEY_RIGHT_SHIFT))
+                {
+                    highlightedIndices.clear();
+                    if(lastSelected >= 0)
+                    {
+                        int start = i;
+                        int end = lastSelected;
+                        if(lastSelected < i)
+                        {
+                            start = lastSelected;
+                            end = i;
+                        }
+                        for(int j = start; j < end; j++)
+                        {
+                            highlightedIndices.insert(j);
+                        }
+                    }
+                    else
+                    {
+                        highlightedIndices.insert(i);
+                    }
+                }
+                else if(window->IsKeyPressed(GLFW_KEY_LEFT_CONTROL) || window->IsKeyPressed(GLFW_KEY_RIGHT_CONTROL))
+                {
+                    lastSelected = i;
+                    if(IndexHighlighted(i))
+                        highlightedIndices.erase(i);
+                    else
+                        highlightedIndices.insert(i);
+                }
+                else
+                {
+                    lastSelected = i;
+                    highlightedIndices.clear();
+                    highlightedIndices.insert(i);
+                }
+            }
         }
         ImGui::EndChild();
 
@@ -66,6 +109,11 @@ void LocalRegion::DrawChildRegion(int width, int height)
     ImGui::SameLine();
     ImGui::BeginChild("File Viewer", ImVec2(0, 0), true);
     ImGui::EndChild();
+}
+
+bool LocalRegion::IndexHighlighted(int index)
+{
+    return highlightedIndices.find(index) != highlightedIndices.end();
 }
 
 ImTextureID LocalRegion::GetTextureId(TextureName textureName)
