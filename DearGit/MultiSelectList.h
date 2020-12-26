@@ -21,7 +21,7 @@ class MultiSelectList
 public:
     MultiSelectList(Window* window = nullptr, MultiSelectListItemProvider* provider = nullptr);
     void SetData(MultiSelectListItemProvider* provider);
-    void Draw();
+    bool Draw();
     void ClearSelections();
     std::set<int> GetSelectedItems();
 private:

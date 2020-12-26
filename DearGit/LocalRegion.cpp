@@ -62,7 +62,8 @@ void LocalRegion::DrawChildRegion(int width, int height)
     {
         DrawLabel("Staged Files");
         ImGui::BeginChild("Staged Files", ImVec2(fileListWidth, fileListHeight), true);
-        stagedMultiSelectList.Draw();
+        if(stagedMultiSelectList.Draw())
+            unstagedMultiSelectList.ClearSelections();
         ImGui::EndChild();
 
         if(DrawLabel("Unstaged Files"))
@@ -70,7 +71,8 @@ void LocalRegion::DrawChildRegion(int width, int height)
         fileListHeight = Utils::Clamp(MIN_SIZE, height - MIN_SIZE, fileListHeight);
 
         ImGui::BeginChild("Unstaged Files", ImVec2(fileListWidth, 0), true);
-        unstagedMultiSelectList.Draw();
+        if(unstagedMultiSelectList.Draw())
+            stagedMultiSelectList.ClearSelections();
         ImGui::EndChild();
     }
     ImGui::EndGroup();

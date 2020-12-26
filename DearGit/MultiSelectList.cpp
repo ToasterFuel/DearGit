@@ -40,18 +40,21 @@ std::set<int> MultiSelectList::GetSelectedItems()
     return highlightedIndices;
 }
 
-void MultiSelectList::Draw()
+bool MultiSelectList::Draw()
 {
+    bool pressed = false;
     if(provider == nullptr || window == nullptr)
-        return;
+        return pressed;
     for(int i = 0; i < provider->GetSize(); i++)
     {
         bool state = ImGui::Selectable(provider->GetLabel(i), IndexHighlighted(i));
         if(state)
         {
+            pressed = true;
             if(window->IsKeyPressed(GLFW_KEY_LEFT_SHIFT) || window->IsKeyPressed(GLFW_KEY_RIGHT_SHIFT))
             {
                 highlightedIndices.clear();
+                std::cout << "shift pressed! last selected: " << lastSelected << " current selecteed: " << i << "\n";
                 if(lastSelected >= 0)
                 {
                     int start = i;
@@ -61,7 +64,7 @@ void MultiSelectList::Draw()
                         start = lastSelected;
                         end = i;
                     }
-                    for(int j = start; j < end; j++)
+                    for(int j = start; j <= end; j++)
                     {
                         highlightedIndices.insert(j);
                     }
@@ -69,6 +72,7 @@ void MultiSelectList::Draw()
                 else
                 {
                     highlightedIndices.insert(i);
+                    lastSelected = i;
                 }
             }
             else if(window->IsKeyPressed(GLFW_KEY_LEFT_CONTROL) || window->IsKeyPressed(GLFW_KEY_RIGHT_CONTROL))
@@ -87,6 +91,7 @@ void MultiSelectList::Draw()
             }
         }
     }
+    return pressed;
 }
 
 bool MultiSelectList::IndexHighlighted(int index)
