@@ -3,6 +3,7 @@
 #include "imgui/imgui.h"
 #include "Window.h"
 #include "Utils.h"
+
 #include <GLFW/glfw3.h>
 
 #define MIN_SIZE  200
@@ -11,8 +12,22 @@ LocalRegion::LocalRegion(): fileListWidth(-1), fileListHeight(-1)
 {
 }
 
+void LocalRegion::ChildRefresh()
+{
+    if(repo == nullptr)
+    {
+        unstagedFiles->files.clear();
+        unstagedMultiSelectList.SetData(unstagedFiles);
+        return;
+    }
+    repo->GitStatus();
+    repo->GetUnstagedFiles(unstagedFiles->files);
+}
+
 bool LocalRegion::ChildInit()
 {
+    unstagedFiles = new StatusDataCollection();
+    unstagedMultiSelectList = MultiSelectList(window, unstagedFiles);
     return true;
 }
 
@@ -41,6 +56,8 @@ void LocalRegion::DrawChildRegion(int width, int height)
     {
         DrawLabel("Staged Files");
         ImGui::BeginChild("Staged Files", ImVec2(fileListWidth, fileListHeight), true);
+        unstagedMultiSelectList.Draw();
+        /*
         static int lastSelected = -1;
         for(int i = 0; i < 100; i++)
         {
@@ -86,6 +103,7 @@ void LocalRegion::DrawChildRegion(int width, int height)
                 }
             }
         }
+        */
         ImGui::EndChild();
 
         if (DrawLabel("Unstaged Files"))

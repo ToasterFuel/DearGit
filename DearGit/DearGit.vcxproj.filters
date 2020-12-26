@@ -57,6 +57,12 @@
     <ClCompile Include="git\StatusData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="MultiSelectList.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="git\StatusDataCollection.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Window.h">
@@ -102,6 +108,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="git\StatusData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MultiSelectList.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="git\StatusDataCollection.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

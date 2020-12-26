@@ -8,7 +8,7 @@
 class Repo
 {
 public:
-    Repo(const char* baseDirectory);
+    Repo(const char* baseDirectory = "");
     bool Init();
     /*
      * Basically the same as running 'git status' in cmd. Returns false if error happened.

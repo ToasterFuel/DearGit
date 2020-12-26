@@ -10,6 +10,7 @@ enum GitStatus
     STATUS_MODIFIED,
     STATUS_DELETED,
     STATUS_MOVED,
+    STATUS_FUTURE_WORK_IS_NEEDED
 };
 
 class StatusData
