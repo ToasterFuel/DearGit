@@ -42,7 +42,6 @@ std::set<int> MultiSelectList::GetSelectedItems()
 
 void MultiSelectList::Draw()
 {
-    std::cout << "provider is null? " << (provider == nullptr) << " window is null? " << (window == nullptr) << "\n";
     if(provider == nullptr || window == nullptr)
         return;
     for(int i = 0; i < provider->GetSize(); i++)

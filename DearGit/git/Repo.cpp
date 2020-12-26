@@ -38,14 +38,11 @@ void Repo::GetStagedFiles(std::vector<StatusData>& files)
 
 void Repo::AddFiles(std::vector<StatusData>& files, int flags)
 {
-    std::cout << "flag: " << flags << "\n";
     for(int i = 0; i < GetStatusItemCount(); i++)
     {
         const git_status_entry* entry = git_status_byindex(statusList, i);
-        std::cout << "\tstatus: " << entry->status << " yeah math! " << (entry->status & flags) << "\n";
         if((entry->status & flags) != 0)
         {
-            std::cout << "HOOO WE ARE ADDING TO THE LIST!\n";
             files.push_back(StatusData(entry));
         }
     }

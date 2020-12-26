@@ -21,7 +21,9 @@ private:
     bool DrawLabel(const char* name);
 
     MultiSelectList unstagedMultiSelectList;
+    MultiSelectList stagedMultiSelectList;
     StatusDataCollection* unstagedFiles;
+    StatusDataCollection* stagedFiles;
     std::set<int> highlightedIndices;
     int fileListWidth;
     int fileListHeight;

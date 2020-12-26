@@ -17,17 +17,23 @@ void LocalRegion::ChildRefresh()
     if(repo == nullptr)
     {
         unstagedFiles->files.clear();
+        stagedFiles->files.clear();
         unstagedMultiSelectList.SetData(unstagedFiles);
+        stagedMultiSelectList.SetData(stagedFiles);
+
         return;
     }
     repo->GitStatus();
     repo->GetUnstagedFiles(unstagedFiles->files);
+    repo->GetStagedFiles(stagedFiles->files);
 }
 
 bool LocalRegion::ChildInit()
 {
     unstagedFiles = new StatusDataCollection();
+    stagedFiles = new StatusDataCollection();
     unstagedMultiSelectList = MultiSelectList(window, unstagedFiles);
+    stagedMultiSelectList = MultiSelectList(window, stagedFiles);
     return true;
 }
 
@@ -56,66 +62,15 @@ void LocalRegion::DrawChildRegion(int width, int height)
     {
         DrawLabel("Staged Files");
         ImGui::BeginChild("Staged Files", ImVec2(fileListWidth, fileListHeight), true);
-        unstagedMultiSelectList.Draw();
-        /*
-        static int lastSelected = -1;
-        for(int i = 0; i < 100; i++)
-        {
-            sprintf_s(label, "Staged_%d.txt", i);
-            bool state = ImGui::Selectable(label, IndexHighlighted(i));
-            if(state)
-            {
-                if(window->IsKeyPressed(GLFW_KEY_LEFT_SHIFT) || window->IsKeyPressed(GLFW_KEY_RIGHT_SHIFT))
-                {
-                    highlightedIndices.clear();
-                    if(lastSelected >= 0)
-                    {
-                        int start = i;
-                        int end = lastSelected;
-                        if(lastSelected < i)
-                        {
-                            start = lastSelected;
-                            end = i;
-                        }
-                        for(int j = start; j < end; j++)
-                        {
-                            highlightedIndices.insert(j);
-                        }
-                    }
-                    else
-                    {
-                        highlightedIndices.insert(i);
-                    }
-                }
-                else if(window->IsKeyPressed(GLFW_KEY_LEFT_CONTROL) || window->IsKeyPressed(GLFW_KEY_RIGHT_CONTROL))
-                {
-                    lastSelected = i;
-                    if(IndexHighlighted(i))
-                        highlightedIndices.erase(i);
-                    else
-                        highlightedIndices.insert(i);
-                }
-                else
-                {
-                    lastSelected = i;
-                    highlightedIndices.clear();
-                    highlightedIndices.insert(i);
-                }
-            }
-        }
-        */
+        stagedMultiSelectList.Draw();
         ImGui::EndChild();
 
-        if (DrawLabel("Unstaged Files"))
+        if(DrawLabel("Unstaged Files"))
             fileListHeight += ImGui::GetIO().MouseDelta.y;
         fileListHeight = Utils::Clamp(MIN_SIZE, height - MIN_SIZE, fileListHeight);
 
         ImGui::BeginChild("Unstaged Files", ImVec2(fileListWidth, 0), true);
-        for (int i = 0; i < 100; i++)
-        {
-            sprintf_s(label, "Unstaged_%d.txt", i);
-            ImGui::Selectable(label, false);
-        }
+        unstagedMultiSelectList.Draw();
         ImGui::EndChild();
     }
     ImGui::EndGroup();
