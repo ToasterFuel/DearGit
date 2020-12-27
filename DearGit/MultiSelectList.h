@@ -23,6 +23,7 @@ public:
     void SetData(MultiSelectListItemProvider* provider);
     bool Draw();
     void ClearSelections();
+    bool HasSelections();
     std::set<int> GetSelectedItems();
 private:
     int lastSelected;

@@ -22,9 +22,13 @@ public:
     int GetStatusItemCount();
     void GetUnstagedFiles(std::vector<StatusData>& files);
     void GetStagedFiles(std::vector<StatusData>& files);
+    bool SaveIndex();
+    bool GetIndex();
+    bool StageFile(const char* path);
 
 private:
     const char* baseDirectory;
+    git_index* gitIndex;
     git_status_list* statusList;
     git_repository* gitRepo;
     void AddFiles(std::vector<StatusData>& files, int flags);

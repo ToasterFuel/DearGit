@@ -1,6 +1,7 @@
 #include "LocalRegion.h"
 #include "TextureHolder.h"
 #include "imgui/imgui.h"
+#include "ImGuiHelpers.h"
 #include "Window.h"
 #include "Utils.h"
 
@@ -48,13 +49,26 @@ void LocalRegion::DrawChildRegion(int width, int height)
     ImGui::BeginGroup();
     {
         ImGui::ImageButton(GetTextureId(TEXTURE_PUSH), ImVec2(40, 40), ImVec2(0, 0), ImVec2(1, 1), 5);
+
         ImGui::ImageButton(GetTextureId(TEXTURE_PULL), ImVec2(40, 40), ImVec2(0, 0), ImVec2(1, 1), 5);
+
         ImGui::Button("Push", ImVec2(50, 50));
         ImGui::Button("Pull", ImVec2(50, 50));
         ImGui::Button("Refresh", ImVec2(50, 50));
         ImGui::Button("Commit", ImVec2(50, 50));
-        ImGui::Button("Add", ImVec2(50, 50));
+
+        if(!unstagedMultiSelectList.HasSelections())
+            ImGui::PushDisabled();
+        if(ImGui::Button("Add", ImVec2(50, 50)))
+            AddToStaged();
+        if(!unstagedMultiSelectList.HasSelections())
+            ImGui::PopDisabled();
+
+        if(!stagedMultiSelectList.HasSelections())
+            ImGui::PushDisabled();
         ImGui::Button("Minus", ImVec2(50, 50));
+        if(!stagedMultiSelectList.HasSelections())
+            ImGui::PopDisabled();
     }
     ImGui::EndGroup();
     ImGui::SameLine();
@@ -84,6 +98,17 @@ void LocalRegion::DrawChildRegion(int width, int height)
     ImGui::SameLine();
     ImGui::BeginChild("File Viewer", ImVec2(0, 0), true);
     ImGui::EndChild();
+}
+
+void LocalRegion::AddToStaged()
+{
+    for(int selectedFile : unstagedMultiSelectList.GetSelectedItems())
+    {
+        StatusData statusData = unstagedFiles->files[selectedFile];
+        repo->StageFile(statusData.Path());
+    }
+    repo->SaveIndex();
+    Refresh();
 }
 
 bool LocalRegion::IndexHighlighted(int index)

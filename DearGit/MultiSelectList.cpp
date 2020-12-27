@@ -29,6 +29,11 @@ void MultiSelectList::SetData(MultiSelectListItemProvider* provider)
     ClearSelections();
 }
 
+bool MultiSelectList::HasSelections()
+{
+    return !highlightedIndices.empty();
+}
+
 void MultiSelectList::ClearSelections()
 {
     lastSelected = -1;
@@ -54,7 +59,6 @@ bool MultiSelectList::Draw()
             if(window->IsKeyPressed(GLFW_KEY_LEFT_SHIFT) || window->IsKeyPressed(GLFW_KEY_RIGHT_SHIFT))
             {
                 highlightedIndices.clear();
-                std::cout << "shift pressed! last selected: " << lastSelected << " current selecteed: " << i << "\n";
                 if(lastSelected >= 0)
                 {
                     int start = i;

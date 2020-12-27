@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-Repo::Repo(const char* baseDirectory): baseDirectory(baseDirectory), statusList(nullptr), gitRepo(nullptr)
+Repo::Repo(const char* baseDirectory): baseDirectory(baseDirectory), statusList(nullptr), gitRepo(nullptr), gitIndex(nullptr)
 {
 }
 
@@ -79,6 +79,51 @@ bool Repo::GitStatus()
     }
 
     return true;
+}
+
+bool Repo::GetIndex()
+{
+    if(gitIndex != nullptr)
+        git_index_free(gitIndex);
+    if(git_repository_index(&gitIndex, gitRepo) != 0)
+    {
+        std::cout << "Error getting index! \n";
+        //TODO do more with the error code
+        return false;
+    }
+    return true;
+}
+
+bool Repo::SaveIndex()
+{
+    if(gitIndex == nullptr)
+        return true;
+    if(git_index_write(gitIndex) != 0)
+    {
+        std::cout << "Error writing index\n";
+        //TODO do more with the error code
+        return false;
+    }
+    return true;
+}
+
+bool Repo::StageFile(const char* path)
+{
+    if(gitIndex == nullptr)
+    {
+        if(!GetIndex())
+            return false;
+    }
+
+    if(git_index_add_bypath(gitIndex, path) != 0)
+    {
+        std::cout << "Error staging file: " << path << "\n";
+        //TODO do more with the error code
+        return false;
+    }
+
+    return true;
+
 }
 
 int Repo::GetStatusItemCount()
