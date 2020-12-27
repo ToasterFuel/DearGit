@@ -4,6 +4,20 @@
 
 Repo::Repo(const char* baseDirectory): baseDirectory(baseDirectory), statusList(nullptr), gitRepo(nullptr), gitIndex(nullptr)
 {
+    singleFileArray = (char**)malloc(sizeof(char*));
+    *singleFileArray = (char*)malloc(sizeof(char) * MAX_FILE_PATH_SIZE + 1);
+    singleFileList.count = 1;
+    singleFileList.strings = singleFileArray;
+    CopyToSingleFile("");
+    CopyToSingleFile("Modified.txt");
+}
+
+Repo::~Repo()
+{
+    StatusCleanUp();
+    HeadCleanUp();
+    free(*singleFileArray);
+    free(singleFileArray);
 }
 
 void Repo::GetUnstagedFiles(std::vector<StatusData>& files)
@@ -81,6 +95,35 @@ bool Repo::GitStatus()
     return true;
 }
 
+void Repo::HeadCleanUp()
+{
+    git_reference_free(headReference);
+    git_object_free(headCommit);
+    headReference = nullptr;
+    headCommit = nullptr;
+}
+
+bool Repo::GetHead()
+{
+    if(headReference != nullptr || headCommit != nullptr)
+        HeadCleanUp();
+    if(git_repository_head(&headReference, gitRepo) != 0)
+    {
+        //TODO error handling
+        std::cout << "Failure getting reference to head\n";
+        return false;
+    }
+
+    if(git_reference_peel(&headCommit, headReference, GIT_OBJ_COMMIT) != 0)
+    {
+        //TODO error handling
+        std::cout << "Failure getting commit to head\n";
+        return false;
+    }
+
+    return true;
+}
+
 bool Repo::GetIndex()
 {
     if(gitIndex != nullptr)
@@ -104,6 +147,31 @@ bool Repo::SaveIndex()
         //TODO do more with the error code
         return false;
     }
+    return true;
+}
+
+bool Repo::UnstageFile(const char* path)
+{
+    if(headReference == nullptr || headCommit == nullptr)
+        GetHead();
+    if(!CopyToSingleFile(path))
+        return false;
+
+    if(git_reset_default(gitRepo, headCommit, &singleFileList) != 0)
+    {
+        std::cout << "Failed to unstage file: " << path << "\n";
+        return false;
+    }
+
+    return true;
+}
+
+bool Repo::CopyToSingleFile(const char* path)
+{
+    int length = strlen(path);
+    if(length >= MAX_FILE_PATH_SIZE)
+        return false;
+    strcpy_s(*singleFileArray, _TRUNCATE, path);
     return true;
 }
 

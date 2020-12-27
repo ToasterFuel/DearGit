@@ -17,6 +17,7 @@ protected:
     virtual void ChildRefresh();
 private:
     void AddToStaged();
+    void AddToUnstaged();
     bool IndexHighlighted(int index);
     ImTextureID GetTextureId(TextureName textureName);
     bool DrawLabel(const char* name);

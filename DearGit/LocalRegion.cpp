@@ -66,7 +66,8 @@ void LocalRegion::DrawChildRegion(int width, int height)
 
         if(!stagedMultiSelectList.HasSelections())
             ImGui::PushDisabled();
-        ImGui::Button("Minus", ImVec2(50, 50));
+        if(ImGui::Button("Minus", ImVec2(50, 50)))
+            AddToUnstaged();
         if(!stagedMultiSelectList.HasSelections())
             ImGui::PopDisabled();
     }
@@ -108,6 +109,16 @@ void LocalRegion::AddToStaged()
         repo->StageFile(statusData.Path());
     }
     repo->SaveIndex();
+    Refresh();
+}
+
+void LocalRegion::AddToUnstaged()
+{
+    for(int selectedFile : stagedMultiSelectList.GetSelectedItems())
+    {
+        StatusData statusData = stagedFiles->files[selectedFile];
+        repo->UnstageFile(statusData.Path());
+    }
     Refresh();
 }
 

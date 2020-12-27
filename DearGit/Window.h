@@ -16,7 +16,7 @@ public:
 private:
     void DrawNavigation(int size);
 
-    Repo onlyRepo;
+    Repo* onlyRepo;
     LocalRegion localRegion;
     GLFWwindow *window;
 };

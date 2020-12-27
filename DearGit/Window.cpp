@@ -48,19 +48,19 @@ bool Window::Init()
         std::cout << "Failed to initialize libgit2\n";
         return false;
     }
-    onlyRepo = Repo("D:\\Workspace\\tmp\\");
+    onlyRepo = new Repo("D:\\Workspace\\tmp\\");
 
     if(!TextureHolder::Instance().Init())
     {
         std::cout << "Failed initializing textures\n";
         return false;
     }
-    if(!onlyRepo.Init())
+    if(!onlyRepo->Init())
     {
         std::cout << "Failed initializing the repo\n";
         return false;
     }
-    if(!localRegion.Init(this, &onlyRepo))
+    if(!localRegion.Init(this, onlyRepo))
     {
         std::cout << "Failed initializing local region\n";
         return false;
@@ -149,4 +149,5 @@ void Window::CleanUp()
 
     glfwDestroyWindow(window);
     glfwTerminate();
+    delete onlyRepo;
 }
