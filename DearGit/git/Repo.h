@@ -6,6 +6,7 @@
 #include <git2.h>
 
 #define MAX_FILE_PATH_SIZE 4096
+#define HEAD "HEAD"
 
 class Repo
 {
@@ -28,6 +29,7 @@ public:
     bool GetIndex();
     bool StageFile(const char* path);
     bool UnstageFile(const char* path);
+    bool Commit(const char* message);
 
     virtual ~Repo();
 

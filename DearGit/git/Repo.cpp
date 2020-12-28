@@ -166,6 +166,71 @@ bool Repo::UnstageFile(const char* path)
     return true;
 }
 
+bool Repo::Commit(const char* message)
+{
+    git_oid commit_oid, tree_oid;
+    git_signature *signature;
+    git_tree *tree;
+    git_object *parent = nullptr;
+    git_reference *ref = nullptr;
+    //TODO Error handle when the signature isn't set up
+    git_signature_default(&signature, gitRepo);
+
+    if(!GetIndex())
+    {
+        std::cout << "Failed to commit because of the index\n";
+        return false;
+    }
+
+    int parentCount = 1;
+    int error = git_revparse_ext(&parent, &ref, gitRepo, HEAD);
+    if (error == GIT_ENOTFOUND) {
+
+        printf("HEAD not found. Creating first commit\n");
+        error = 0;
+        parentCount = 0;
+    }
+    else if (error != 0) {
+        const git_error *err = git_error_last();
+        if (err) printf("ERROR %d: %s\n", err->klass, err->message);
+        else printf("ERROR %d: no detailed info\n", error);
+    }
+
+    if(git_index_write_tree(&tree_oid, gitIndex) < 0)
+    {
+        //TODO Error handling
+        std::cout << "Error writing tree before commiting\n";
+        git_signature_free(signature);
+        git_object_free(parent);
+        return false;
+    }
+    if(git_tree_lookup(&tree, gitRepo, &tree_oid) < 0)
+    {
+        //TODO Error handling
+        std::cout << "Error getting tree for commiting\n";
+        git_signature_free(signature);
+        git_object_free(parent);
+        return false;
+    }
+    if(git_commit_create_v(&commit_oid, gitRepo, HEAD, signature, signature, NULL, message, tree, parentCount, parent) < 0)
+    {
+        //TODO Error handling
+        std::cout << "Error commiting\n";
+        git_signature_free(signature);
+        git_object_free(parent);
+        git_tree_free(tree);
+        return false;
+    }
+
+    /*
+        const git_error *err = git_error_last();
+        if (err) printf("ERROR %d: %s\n", err->klass, err->message);
+        else printf("ERROR %d: no detailed info\n", error);
+    */
+
+    return true;
+}
+
 bool Repo::CopyToSingleFile(const char* path)
 {
     int length = strlen(path);

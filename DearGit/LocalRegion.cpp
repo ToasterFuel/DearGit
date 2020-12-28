@@ -55,7 +55,8 @@ void LocalRegion::DrawChildRegion(int width, int height)
         ImGui::Button("Push", ImVec2(50, 50));
         ImGui::Button("Pull", ImVec2(50, 50));
         ImGui::Button("Refresh", ImVec2(50, 50));
-        ImGui::Button("Commit", ImVec2(50, 50));
+        if(ImGui::Button("Commit", ImVec2(50, 50)))
+            repo->Commit("Testing");
 
         if(!unstagedMultiSelectList.HasSelections())
             ImGui::PushDisabled();
