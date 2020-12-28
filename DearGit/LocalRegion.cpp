@@ -55,8 +55,12 @@ void LocalRegion::DrawChildRegion(int width, int height)
         ImGui::Button("Push", ImVec2(50, 50));
         ImGui::Button("Pull", ImVec2(50, 50));
         ImGui::Button("Refresh", ImVec2(50, 50));
+        if(stagedFiles->GetSize() == 0)
+            ImGui::PushDisabled();
         if(ImGui::Button("Commit", ImVec2(50, 50)))
             repo->Commit("Testing");
+        if(stagedFiles->GetSize() == 0)
+            ImGui::PopDisabled();
 
         if(!unstagedMultiSelectList.HasSelections())
             ImGui::PushDisabled();

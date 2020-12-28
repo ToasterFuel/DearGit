@@ -1,5 +1,6 @@
 #include "Repo.h"
 
+#include <sstream>
 #include <iostream>
 
 Repo::Repo(const char* baseDirectory): baseDirectory(baseDirectory), statusList(nullptr), gitRepo(nullptr), gitIndex(nullptr)
@@ -9,7 +10,6 @@ Repo::Repo(const char* baseDirectory): baseDirectory(baseDirectory), statusList(
     singleFileList.count = 1;
     singleFileList.strings = singleFileArray;
     CopyToSingleFile("");
-    CopyToSingleFile("Modified.txt");
 }
 
 Repo::~Repo()
@@ -64,12 +64,10 @@ void Repo::AddFiles(std::vector<StatusData>& files, int flags)
 
 bool Repo::Init()
 {
-    if(git_repository_open(&gitRepo, baseDirectory) != 0)
-    {
-        std::cout << "Error opening local repository: " << baseDirectory << "\n";
-        //TODO, what are the error codes? Look up how to do that!
+    std::ostringstream msg("Error opening local repository: ");
+    msg << baseDirectory;
+    if(DidFailAndPrintError(git_repository_open(&gitRepo, baseDirectory), msg.str().c_str()))
         return false;
-    }
 
     return true;
 }
@@ -85,12 +83,11 @@ void Repo::StatusCleanUp()
 bool Repo::GitStatus()
 {
     StatusCleanUp();
-    int status = git_status_list_new(&statusList, gitRepo, nullptr);
-    if(status != 0)
-    {
-        std::cout << "Error getting status of local repository: " << baseDirectory << "\n";
+
+    std::ostringstream msg("Error getting status of local repository: ");
+    msg << baseDirectory;
+    if(DidFailAndPrintError(git_status_list_new(&statusList, gitRepo, nullptr), msg.str().c_str()))
         return false;
-    }
 
     return true;
 }
@@ -107,19 +104,12 @@ bool Repo::GetHead()
 {
     if(headReference != nullptr || headCommit != nullptr)
         HeadCleanUp();
-    if(git_repository_head(&headReference, gitRepo) != 0)
-    {
-        //TODO error handling
-        std::cout << "Failure getting reference to head\n";
-        return false;
-    }
 
-    if(git_reference_peel(&headCommit, headReference, GIT_OBJ_COMMIT) != 0)
-    {
-        //TODO error handling
-        std::cout << "Failure getting commit to head\n";
+    if(DidFailAndPrintError(git_repository_head(&headReference, gitRepo), "Failure getting reference to head"))
         return false;
-    }
+
+    if(DidFailAndPrintError(git_reference_peel(&headCommit, headReference, GIT_OBJ_COMMIT), "Failure getting commit to head"))
+        return false;
 
     return true;
 }
@@ -128,12 +118,8 @@ bool Repo::GetIndex()
 {
     if(gitIndex != nullptr)
         git_index_free(gitIndex);
-    if(git_repository_index(&gitIndex, gitRepo) != 0)
-    {
-        std::cout << "Error getting index! \n";
-        //TODO do more with the error code
+    if(DidFailAndPrintError(git_repository_index(&gitIndex, gitRepo), "Error getting index!"))
         return false;
-    }
     return true;
 }
 
@@ -141,12 +127,8 @@ bool Repo::SaveIndex()
 {
     if(gitIndex == nullptr)
         return true;
-    if(git_index_write(gitIndex) != 0)
-    {
-        std::cout << "Error writing index\n";
-        //TODO do more with the error code
+    if(DidFailAndPrintError(git_index_write(gitIndex), "Error writing index"))
         return false;
-    }
     return true;
 }
 
@@ -157,11 +139,10 @@ bool Repo::UnstageFile(const char* path)
     if(!CopyToSingleFile(path))
         return false;
 
-    if(git_reset_default(gitRepo, headCommit, &singleFileList) != 0)
-    {
-        std::cout << "Failed to unstage file: " << path << "\n";
+    std::ostringstream msg("Failed to unstage file: ");
+    msg << path;
+    if(DidFailAndPrintError(git_reset_default(gitRepo, headCommit, &singleFileList), msg.str().c_str()))
         return false;
-    }
 
     return true;
 }
@@ -184,49 +165,40 @@ bool Repo::Commit(const char* message)
 
     int parentCount = 1;
     int error = git_revparse_ext(&parent, &ref, gitRepo, HEAD);
-    if (error == GIT_ENOTFOUND) {
-
-        printf("HEAD not found. Creating first commit\n");
+    if(error == GIT_ENOTFOUND)
+    {
         error = 0;
         parentCount = 0;
     }
-    else if (error != 0) {
-        const git_error *err = git_error_last();
-        if (err) printf("ERROR %d: %s\n", err->klass, err->message);
-        else printf("ERROR %d: no detailed info\n", error);
+    else if(error != 0)
+    {
+        DidFailAndPrintError(error, "Error finding the parent (last commit?) before committing");
+        return false;
     }
 
-    if(git_index_write_tree(&tree_oid, gitIndex) < 0)
+    if(DidFailAndPrintError(git_index_write_tree(&tree_oid, gitIndex), "Error writing tree before committing"))
     {
-        //TODO Error handling
-        std::cout << "Error writing tree before commiting\n";
         git_signature_free(signature);
         git_object_free(parent);
         return false;
     }
-    if(git_tree_lookup(&tree, gitRepo, &tree_oid) < 0)
+    if(DidFailAndPrintError(git_tree_lookup(&tree, gitRepo, &tree_oid), "Error getting tree for committing"))
     {
-        //TODO Error handling
-        std::cout << "Error getting tree for commiting\n";
         git_signature_free(signature);
         git_object_free(parent);
         return false;
     }
-    if(git_commit_create_v(&commit_oid, gitRepo, HEAD, signature, signature, NULL, message, tree, parentCount, parent) < 0)
+    if(DidFailAndPrintError(git_commit_create_v(&commit_oid, gitRepo, HEAD, signature, signature, NULL, message, tree, parentCount, parent), "Error committing"))
     {
-        //TODO Error handling
-        std::cout << "Error commiting\n";
         git_signature_free(signature);
         git_object_free(parent);
         git_tree_free(tree);
         return false;
     }
 
-    /*
-        const git_error *err = git_error_last();
-        if (err) printf("ERROR %d: %s\n", err->klass, err->message);
-        else printf("ERROR %d: no detailed info\n", error);
-    */
+    git_signature_free(signature);
+    git_object_free(parent);
+    git_tree_free(tree);
 
     return true;
 }
@@ -240,6 +212,19 @@ bool Repo::CopyToSingleFile(const char* path)
     return true;
 }
 
+bool Repo::DidFailAndPrintError(int errorCode, const char* appErrorMessage)
+{
+    if(errorCode >= 0)
+        return false;
+
+    const git_error *err = git_error_last();
+    if(err)
+        std::cout << appErrorMessage << " ErrorCode: " << errorCode << " errorClass: " << err->klass << " error message: " << err->message << "\n";
+    else
+        std::cout << appErrorMessage << " ErrorCode: " << errorCode << " (no additional information for libgit)\n";
+    return true;
+}
+
 bool Repo::StageFile(const char* path)
 {
     if(gitIndex == nullptr)
@@ -248,12 +233,11 @@ bool Repo::StageFile(const char* path)
             return false;
     }
 
-    if(git_index_add_bypath(gitIndex, path) != 0)
-    {
-        std::cout << "Error staging file: " << path << "\n";
-        //TODO do more with the error code
+    std::ostringstream msg("Error staging file: ");
+    msg << path;
+
+    if(DidFailAndPrintError(git_index_add_bypath(gitIndex, path), msg.str().c_str()))
         return false;
-    }
 
     return true;
 

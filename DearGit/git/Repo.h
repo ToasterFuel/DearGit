@@ -43,6 +43,7 @@ private:
     git_reference *headReference;
     git_object *headCommit;
 
+    bool DidFailAndPrintError(int errorCode, const char* appErrorMessage);
     bool GetHead();
     void HeadCleanUp();
     bool CopyToSingleFile(const char* path);
