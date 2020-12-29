@@ -9,7 +9,7 @@
 
 #define MIN_SIZE  200
 
-LocalRegion::LocalRegion(): fileListWidth(-1), fileListHeight(-1)
+LocalRegion::LocalRegion(): fileListWidth(-1), fileListHeight(-1), showingCommitPopup(false)
 {
 }
 
@@ -49,16 +49,16 @@ void LocalRegion::DrawChildRegion(int width, int height)
     ImGui::BeginGroup();
     {
         ImGui::ImageButton(GetTextureId(TEXTURE_PUSH), ImVec2(40, 40), ImVec2(0, 0), ImVec2(1, 1), 5);
-
         ImGui::ImageButton(GetTextureId(TEXTURE_PULL), ImVec2(40, 40), ImVec2(0, 0), ImVec2(1, 1), 5);
 
         ImGui::Button("Push", ImVec2(50, 50));
         ImGui::Button("Pull", ImVec2(50, 50));
         ImGui::Button("Refresh", ImVec2(50, 50));
+
         if(stagedFiles->GetSize() == 0)
             ImGui::PushDisabled();
         if(ImGui::Button("Commit", ImVec2(50, 50)))
-            repo->Commit("Testing");
+            showingCommitPopup = true;
         if(stagedFiles->GetSize() == 0)
             ImGui::PopDisabled();
 
@@ -104,6 +104,21 @@ void LocalRegion::DrawChildRegion(int width, int height)
     ImGui::SameLine();
     ImGui::BeginChild("File Viewer", ImVec2(0, 0), true);
     ImGui::EndChild();
+
+    bool confirmed;
+    if(showingCommitPopup)
+    {
+        if(ImGui::ShowTextDialog("Commit Message", "Enter commit message:", "##Commit Message", textBuffer, TEXT_BUFFER_SIZE, confirmed))
+        {
+            showingCommitPopup = false;
+            if(confirmed)
+            {
+                if(!repo->Commit(textBuffer))
+                    std::cout << "Failure commiting :(\n";
+                Refresh();
+            }
+        }
+    }
 }
 
 void LocalRegion::AddToStaged()

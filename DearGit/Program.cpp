@@ -13,8 +13,6 @@ int main()
     ////std::cout << git_libgit2_init() << "\n";
 
 
-
-
     ////Repo myRepo("D:\\Workspace\\tmp\\");
     ////std::cout << "init repo: " << myRepo.Init() << "\n";
     ////std::cout << "status: " << myRepo.GitStatus() << "\n";

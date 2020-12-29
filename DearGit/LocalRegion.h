@@ -7,6 +7,8 @@
 #include "TextureHolder.h"
 #include <set>
 
+#define TEXT_BUFFER_SIZE 4096
+
 class LocalRegion: public Region
 {
 public:
@@ -27,6 +29,8 @@ private:
     StatusDataCollection* unstagedFiles;
     StatusDataCollection* stagedFiles;
     std::set<int> highlightedIndices;
+    char textBuffer[TEXT_BUFFER_SIZE];
+    bool showingCommitPopup;
     int fileListWidth;
     int fileListHeight;
 };
