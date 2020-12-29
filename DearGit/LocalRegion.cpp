@@ -49,7 +49,11 @@ void LocalRegion::DrawChildRegion(int width, int height)
     ImGui::BeginGroup();
     {
         ImGui::ImageButton(GetTextureId(TEXTURE_PUSH), ImVec2(40, 40), ImVec2(0, 0), ImVec2(1, 1), 5);
+        if(ImGui::IsItemHovered(.5f))
+            ImGui::SetTooltip("Push");
         ImGui::ImageButton(GetTextureId(TEXTURE_PULL), ImVec2(40, 40), ImVec2(0, 0), ImVec2(1, 1), 5);
+        if(ImGui::IsItemHovered(.5f))
+            ImGui::SetTooltip("Pull");
 
         ImGui::Button("Push", ImVec2(50, 50));
         ImGui::Button("Pull", ImVec2(50, 50));

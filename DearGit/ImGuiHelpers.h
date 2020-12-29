@@ -8,6 +8,7 @@ namespace ImGui
     void PushDisabled();
     void PopDisabled();
     bool ShowTextDialog(const char* dialogName, const char* commandText, const char* label, char* buffer, int bufferSize, bool& confiremed);
+    bool IsItemHovered(float threshold);
 }
 
 #endif

@@ -55,3 +55,8 @@ bool ImGui::ShowTextDialog(const char* dialogName, const char* commandText, cons
 
     return returnValue;
 }
+
+bool ImGui::IsItemHovered(float threshold)
+{
+    return ImGui::IsItemHovered() && GImGui->HoveredIdTimer > threshold;
+}
