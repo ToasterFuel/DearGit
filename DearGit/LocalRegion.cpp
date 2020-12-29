@@ -53,7 +53,8 @@ void LocalRegion::DrawChildRegion(int width, int height)
 
         ImGui::Button("Push", ImVec2(50, 50));
         ImGui::Button("Pull", ImVec2(50, 50));
-        ImGui::Button("Refresh", ImVec2(50, 50));
+        if(ImGui::Button("Refresh", ImVec2(50, 50)))
+            Refresh();
 
         if(stagedFiles->GetSize() == 0)
             ImGui::PushDisabled();
